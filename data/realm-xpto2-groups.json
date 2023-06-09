@@ -1,0 +1,28 @@
+  {
+  "id": "b7a42984-abf5-41f0-9456-7d1d1757e9d0",
+  "realm": "xpto",
+  "users": [
+    {
+      "username": "admin",
+      "password": "admin",
+      "email": "admin@localhost",
+      "enabled": true,
+      "emailVerified": true,
+      "totp": false,
+      "createdTimestamp": 0,
+      "attributes": {}
+    },
+    {
+      "username": "admin2",
+      "password": "admin2",
+      "email": "admin@localhost",
+      "enabled": true,
+      "emailVerified": true,
+      "totp": false,
+      "createdTimestamp": 0,
+      "attributes": {}
+    }
+  ]
+}
+
+
