@@ -1,8 +1,6 @@
 from jsonmerge import merge
-import glob
 import json
 import os   
-
 
 input_folder:str            = './data/'
 output_folder:str           = './out/'
@@ -34,45 +32,32 @@ def create_json_file_dictionary(inFolder:str = input_folder, outFolder:str = out
                 realms_dict[json_file_name] = []
             realms_dict[json_file_name].append(ff)
     
-    for realm in realms_dict:
-        Files = glob.glob(input_folder + realm)
-        for i, singlefile in realms_dict[realm]:
-            if i==0:
-                with open(input_folder + singlefile) as jf:
-                    data = json.load(jf)         
-            else:
-                with open(input_folder + singlefile) as jf1:
-                    data['data'].extend(json.load(jf1)['data'])
-                    print(data)
-
+    #Interpolate the json files
+    interpolated_json:dict      = {}
+   
+    for key in realms_dict: 
+        for idx,json_file in enumerate(realms_dict[key]):
+            jsonData = json.load(open(inFolder + json_file))
             
-    # for realm in realms_dict:
-    #     interpolated_json = {}
-    #     for json_file in realms_dict[realm]:
-    #         with open(input_folder + json_file) as json_file:
-    #             data = json.load(json_file)
-    #             interpolated_json = merge(interpolated_json, data, schema={"mergeStrategy": "objectMerge"})
-    #     with open(outFolder + base_output_file_name + realm + '.json', 'w') as outfile:
-    #         json.dump(interpolated_json, outfile, indent=2)
-             
-      
+            #If is the first file, just copy the data
+            if (idx == 0):
+                interpolated_json = jsonData    
+                
+            #If is not the first file, merge the data
+            else:
+
+
+
+
+               #interpolated_json = merge(interpolated_json, jsonData)
+                
+        #Save the interpolated json file       
+        with open(outFolder + base_output_file_name + key + '.json', 'w') as outfile:
+            json.dump(interpolated_json, outfile, indent=2)
+        
 def main():
     create_json_file_dictionary()
 
-
 if __name__ == "__main__":
     main()
-    
-    
-    
-#Loop through the dictionary of json files, interpolate them, creating non existent values and save them in the output folder
-# for realm in realms_dict:
-#     interpolated_json = {}
-#     for json_file in realms_dict[realm]:
-#         with open(input_folder + json_file) as json_file:
-#             data = json.load(json_file)
-#             interpolated_json = {**interpolated_json, **data}
-#     with open(outFolder + base_output_file_name + realm + '.json', 'w') as outfile:
-#         json.dump(interpolated_json, outfile, indent=2)
-
     
