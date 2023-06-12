@@ -37,6 +37,7 @@ def create_json_file_dictionary(inFolder:str = input_folder, outFolder:str = out
    
     for key in realms_dict: 
         for idx,json_file in enumerate(realms_dict[key]):
+            
             jsonData = json.load(open(inFolder + json_file))
             
             #If is the first file, just copy the data
@@ -45,12 +46,15 @@ def create_json_file_dictionary(inFolder:str = input_folder, outFolder:str = out
                 
             #If is not the first file, merge the data
             else:
-
-
-
-
-               #interpolated_json = merge(interpolated_json, jsonData)
                 
+                #convert the keys to list
+                toMerge  = list(jsonData.keys())
+                merged   = list(interpolated_json.keys())
+                
+                #detects if already exist keys in the interpolated json
+                for k in toMerge:
+                    if k in merged:
+                        interpolated_json[k] = interpolated_json[k] + jsonData[k]
         #Save the interpolated json file       
         with open(outFolder + base_output_file_name + key + '.json', 'w') as outfile:
             json.dump(interpolated_json, outfile, indent=2)
