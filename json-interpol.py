@@ -1,10 +1,20 @@
 from jsonmerge import merge
 import json
 import os   
+import argparse
 
-input_folder:str            = './data/'
-output_folder:str           = './out/'
-base_output_file_name:str   = 'realm_'
+parser = argparse.ArgumentParser("JSON Mergerator.\n\n")
+parser.description = "Merge JSON files in a folder, agrupaded by the word after the first dash of file name"
+parser.description += "The files should have a common name between '-' as second word of file name:"
+parser.description += "Example: 'users-abc-file.json', 'groups-abc-file.json', will be merged in 'realm_abc.json', if not used the flag -b for onother base name'\n\n"
+parser.add_argument("-j","--jsonsDir",  help="The folder where the JSON files are located, default './jsons/'. This folder MUST exist", type=str, default="./jsons/")
+parser.add_argument("-o","--outDir", help="The folder where the interpolated JSON files will be saved, default './out/'. This folder MUST exist", type=str, default="./out/")
+parser.add_argument("-b","--baseName", help="The base name of the interpolated JSON files, default 'realm_'", type=str, default="relam_")
+args = parser.parse_args()
+
+input_folder:str            = args.jsonsDir
+output_folder:str           = args.outDir
+base_output_file_name:str   = args.baseName
 
 json_files:list             = []
 realms_dict:dict            = {}
@@ -32,33 +42,19 @@ def create_json_file_dictionary(inFolder:str = input_folder, outFolder:str = out
                 realms_dict[json_file_name] = []
             realms_dict[json_file_name].append(ff)
     
-    #Interpolate the json files
-    interpolated_json:dict      = {}
-   
+    #Interpolate the json filespyi
     for key in realms_dict: 
-        for idx,json_file in enumerate(realms_dict[key]):
+        merged:dict      = {} 
+        for json_file in realms_dict[key]:
             
-            jsonData = json.load(open(inFolder + json_file))
-            
-            #If is the first file, just copy the data
-            if (idx == 0):
-                interpolated_json = jsonData    
-                
-            #If is not the first file, merge the data
-            else:
-                
-                #convert the keys to list
-                toMerge  = list(jsonData.keys())
-                merged   = list(interpolated_json.keys())
-                
-                #detects if already exist keys in the interpolated json
-                for k in toMerge:
-                    if k in merged:
-                        interpolated_json[k] = interpolated_json[k] + jsonData[k]
+            data = json.load(open(inFolder + json_file))
+            merged = merge(merged, data)
+               
         #Save the interpolated json file       
         with open(outFolder + base_output_file_name + key + '.json', 'w') as outfile:
-            json.dump(interpolated_json, outfile, indent=2)
-        
+            json.dump(merged, outfile, indent=2)
+  
+       
 def main():
     create_json_file_dictionary()
 
