@@ -1,10 +1,20 @@
 from jsonmerge import merge
 import json
 import os   
+import argparse
 
-input_folder:str            = './data/'
-output_folder:str           = './out/'
-base_output_file_name:str   = 'realm_'
+parser = argparse.ArgumentParser("JSON Mergerator.\n\n")
+parser.description = "Merge JSON files in a folder, agrupaded by the word after the first dash of file name"
+parser.description += "The files should have a common name between '-' as second word of file name:"
+parser.description += "Example: 'users-abc-file.json', 'groups-abc-file.json', will be merged in 'realm_abc.json', if not used the flag -b for onother base name'\n\n"
+parser.add_argument("-j","--jsonsDir",  help="The folder where the JSON files are located, default './jsons/'. This folder MUST exist", type=str, default="./jsons/")
+parser.add_argument("-o","--outDir", help="The folder where the interpolated JSON files will be saved, default './jsons/out/'. This folder MUST exist", type=str, default="./jsons/out/")
+parser.add_argument("-b","--baseName", help="The base name of the interpolated JSON files, default 'merged_'", type=str, default="merged_")
+args = parser.parse_args()
+
+input_folder:str            = args.jsonsDir
+output_folder:str           = args.outDir
+base_output_file_name:str   = args.baseName
 
 json_files:list             = []
 realms_dict:dict            = {}
@@ -19,6 +29,20 @@ def create_json_file_dictionary(inFolder:str = input_folder, outFolder:str = out
         folder (str): Folder where the JSON files are located
 
     """
+    
+    #check if the folder exists, otherwise create it
+    if not os.path.exists(inFolder):
+        os.makedirs(inFolder)
+        print("Directory " , inFolder ,  " not found! It was created.\n"+
+              "Please put the JSON files, to merge, into this folder and run the script again!\n")
+        print("The files must have the .json extension and shoud have the same agregation name between '-' as second word of file name:\n")
+        print("Example:\n\n"+
+              "'users-abc-file.json', 'groups-abc-file.json', will be merged in 'realm_abc.json', if not used the flag -b for onother base name'\n\n")    
+    if not os.path.exists(outFolder):
+        os.makedirs(outFolder)
+        print("Directory " , outFolder ,  " not found! It was created\n"+
+              "You will find the interpolated JSON file in this folder\n")
+
     #Update the list of json files
     for f in os.listdir(inFolder):
         if f.endswith(".json"):
@@ -31,29 +55,20 @@ def create_json_file_dictionary(inFolder:str = input_folder, outFolder:str = out
             if json_file_name not in realms_dict:
                 realms_dict[json_file_name] = []
             realms_dict[json_file_name].append(ff)
+    
+    #Interpolate the json filespyi
+    for key in realms_dict: 
+        merged:dict      = {} 
+        for json_file in realms_dict[key]:
             
-    for realm in realms_dict:
-        interpolated_json = {}
-        for json_file in realms_dict[realm]:
-            with open(input_folder + json_file) as json_file:
-                
-                data = json.load(json_file)
-                
-                for interator in data:
-                    print ( interator ," --- " , data[interator])
-                    
-                    if not interpolated_json:
-                        interpolated_json = data
-                    
-                    else:
-                        if isinstance(interpolated_json, dict):
-                            print ( "instance ---" , interator ," --- " , data[interator])
-                        else:
-                            interpolated_json = merge(interpolated_json, data, schema={"mergeStrategy": "arrayMerge"})
-                                                             
-        with open(outFolder + base_output_file_name + realm + '.json', 'w') as outfile:
-            json.dump(interpolated_json, outfile, indent=2)
-             
+            data = json.load(open(inFolder + json_file))
+            merged = merge(merged, data)
+               
+        #Save the interpolated json file       
+        with open(outFolder + base_output_file_name + key + '.json', 'w') as outfile:
+            json.dump(merged, outfile, indent=2)
+  
+       
 def main():
     create_json_file_dictionary()
 
