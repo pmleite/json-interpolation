@@ -1,4 +1,3 @@
-from jsonmerge import merge
 import json
 import os   
 import argparse
@@ -62,7 +61,7 @@ def create_json_file_dictionary(inFolder:str = input_folder, outFolder:str = out
         for json_file in realms_dict[key]:
             
             data = json.load(open(inFolder + json_file))
-            merged = merge(merged, data)
+            merged.update(data)
                
         #Save the interpolated json file       
         with open(outFolder + base_output_file_name + key + '.json', 'w') as outfile:
