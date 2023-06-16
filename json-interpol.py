@@ -7,7 +7,7 @@ parser.description = "Merge JSON files in a folder, agrupaded by the word after 
 parser.description += "The files should have a common name between '-' as second word of file name:"
 parser.description += "Example: 'users-abc-file.json', 'groups-abc-file.json', will be merged in 'realm_abc.json', if not used the flag -b for onother base name'\n\n"
 parser.add_argument("-j","--jsonsDir",  help="The folder where the JSON files are located, default './jsons/'. This folder MUST exist", type=str, default="./jsons/")
-parser.add_argument("-o","--outDir", help="The folder where the interpolated JSON files will be saved, default './jsons/out/'. This folder MUST exist", type=str, default="./jsons/out/")
+parser.add_argument("-o","--outDir", help="The folder where the interpolated JSON files will be saved, default './jsons/out/'. This folder MUST exist", type=str)
 parser.add_argument("-b","--baseName", help="The base name of the interpolated JSON files, default 'merged_'", type=str, default="merged_")
 args = parser.parse_args()
 
@@ -37,10 +37,17 @@ def create_json_file_dictionary(inFolder:str = input_folder, outFolder:str = out
         print("The files must have the .json extension and shoud have the same agregation name between '-' as second word of file name:\n")
         print("Example:\n\n"+
               "'users-abc-file.json', 'groups-abc-file.json', will be merged in 'realm_abc.json', if not used the flag -b for onother base name'\n\n")    
-    if not os.path.exists(outFolder):
-        os.makedirs(outFolder)
-        print("Directory " , outFolder ,  " not found! It was created\n"+
-              "You will find the interpolated JSON file in this folder\n")
+   
+    if (outFolder):
+        if not os.path.exists(outFolder):
+            os.makedirs(outFolder)
+            print("Directory " , outFolder ,  " not found! It was created\n"+
+                "You will find the interpolated JSON file in this folder\n")
+    else:
+        print("Output folder not defined! This is a demended parameter!")
+        print("Please use the flag -o OUTDIR to define the output folder!\n")
+        print("Example:   -o ./teste/\n")
+        exit(1)
 
     #Update the list of json files
     for f in os.listdir(inFolder):
@@ -58,14 +65,18 @@ def create_json_file_dictionary(inFolder:str = input_folder, outFolder:str = out
     #Interpolate the json filespyi
     for key in realms_dict: 
         merged:dict      = {} 
+        print("Merging the files: " + str(realms_dict[key]))
         for json_file in realms_dict[key]:
             
             data = json.load(open(inFolder + json_file))
+            print("Merging the file: " + json_file)
             merged.update(data)
                
         #Save the interpolated json file       
         with open(outFolder + base_output_file_name + key + '.json', 'w') as outfile:
             json.dump(merged, outfile, indent=2)
+            print(merged)
+            print("The interpolated file: " + base_output_file_name + key + '.json was saved in the folder: ' + outFolder + "\n")
   
        
 def main():
